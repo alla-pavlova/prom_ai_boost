@@ -1,3 +1,7 @@
+data/output*.xlsx
+data/errors*.xlsx
+logs/
+
 .venv/
 .env
 .idea/
@@ -5,4 +9,5 @@
 __pycache__/
 *.pyc
 
-data/output*.xlsx
+
+

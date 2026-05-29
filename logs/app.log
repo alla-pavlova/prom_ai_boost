@@ -1,6 +1,0 @@
-2026-05-29 23:30:55,769 - INFO - Старт обработки файла
-2026-05-29 23:30:56,484 - INFO - Processed product: Ноутбук Lenovo, SKU: LEN001
-2026-05-29 23:30:56,485 - INFO - Processed product: Мышка Logitech, SKU: LOG001
-2026-05-29 23:30:56,486 - WARNING - Duplicate SKU: LEN001
-2026-05-29 23:30:56,491 - INFO - Statistics: total=3, processed=2, duplicates=1, errors=0, skipped=0
-2026-05-29 23:30:56,562 - INFO - Файл сохранён: data/output_20260529_233056.xlsx
