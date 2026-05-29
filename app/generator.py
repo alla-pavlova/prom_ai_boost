@@ -47,7 +47,12 @@ def generate_product_content(
 - Используй только факты из блока SOURCE_FACTS.
 - Не выдумывай технические характеристики.
 - Если фактов недостаточно, верни status = "no_data".
-- Верни только JSON без markdown.
+- Верни только JSON.
+- Не используй markdown.
+- Не используй ```json.
+- Не добавляй пояснения.
+- Не добавляй текст до JSON.
+- Не добавляй текст после JSON.
 
 SOURCE_FACTS:
 {source_facts}
@@ -69,6 +74,7 @@ SOURCE_FACTS:
 
     response = client.chat.completions.create(
         model=MODEL,
+        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": "Ты помощник для e-commerce и Prom.ua."},
             {"role": "user", "content": prompt},
@@ -76,5 +82,36 @@ SOURCE_FACTS:
         temperature=0.2,
     )
 
-    content = response.choices[0].message.content
-    return json.loads(content)
+    content = response.choices[0].message.content.strip()
+
+    try:
+        if content.startswith("```json"):
+            content = content.replace("```json", "")
+            content = content.replace("```", "")
+            content = content.strip()
+
+        result = json.loads(content)
+
+        required_fields = [
+            "description_ua",
+            "description_ru",
+            "html_description",
+            "seo_tags",
+            "status",
+        ]
+
+        for field in required_fields:
+            if field not in result:
+                raise ValueError(f"Missing field: {field}")
+
+        return result
+
+    except Exception as e:
+        return {
+            "description_ua": "",
+            "description_ru": "",
+            "html_description": "",
+            "seo_tags": "",
+            "status": "error",
+            "error_message": f"Invalid JSON response: {str(e)}",
+        }
