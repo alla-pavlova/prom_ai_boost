@@ -45,6 +45,8 @@ def main():
     error_messages = []
     processed_at = []
     source_facts_list = []
+    tokens_used_list = []
+    estimated_cost_list = []
 
     processed_skus = set()
 
@@ -65,6 +67,8 @@ def main():
             error_messages.append("No product name")
             processed_at.append("")
             source_facts_list.append("")
+            tokens_used_list.append(0)
+            estimated_cost_list.append(0)
 
             continue
 
@@ -80,6 +84,8 @@ def main():
             error_messages.append(f"Duplicate SKU: {sku}")
             processed_at.append("")
             source_facts_list.append("")
+            tokens_used_list.append(0)
+            estimated_cost_list.append(0)
 
             continue
 
@@ -109,7 +115,8 @@ def main():
             error_messages.append("")
             processed_at.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             source_facts_list.append(source_facts)
-
+            tokens_used_list.append(result.get("tokens_used", 0))
+            estimated_cost_list.append(result.get("estimated_cost_usd", 0))
             logging.info(f"Processed product: {name}, SKU: {sku}")
 
         except Exception as e:
@@ -125,6 +132,8 @@ def main():
             error_messages.append(error_text)
             processed_at.append("")
             source_facts_list.append("")
+            tokens_used_list.append(0)
+            estimated_cost_list.append(0)
 
     df["description_ua"] = description_ua
     df["description_ru"] = description_ru
@@ -134,8 +143,12 @@ def main():
     df["error_message"] = error_messages
     df["processed_at"] = processed_at
     df["source_facts"] = source_facts_list
+    df["tokens_used"] = tokens_used_list
+    df["estimated_cost_usd"] = estimated_cost_list
 
     total_count = len(df)
+    total_tokens = sum(tokens_used_list)
+    total_cost = sum(estimated_cost_list)
     processed_count = statuses.count("mock_processed") + statuses.count("processed")
     duplicate_count = statuses.count("duplicate")
     error_count = statuses.count("error")
@@ -143,6 +156,8 @@ def main():
     no_data_count = statuses.count("no_data")
 
     print("\n===== Статистика обработки =====")
+    print(f"Токенов использовано: {total_tokens}")
+    print(f"Примерная стоимость: ${total_cost:.6f}")
     print(f"Всего строк: {total_count}")
     print(f"Обработано: {processed_count}")
     print(f"Дубликатов: {duplicate_count}")

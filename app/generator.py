@@ -1,9 +1,14 @@
 import json
 from openai import OpenAI
 
-from app.config import OPENAI_API_KEY, MODEL, USE_OPENAI
 from app.prom_formatter import build_html_description
-
+from app.config import (
+    OPENAI_API_KEY,
+    MODEL,
+    USE_OPENAI,
+    OPENAI_INPUT_PRICE_PER_1M,
+    OPENAI_OUTPUT_PRICE_PER_1M,
+)
 
 def generate_mock_content(
     name: str,
@@ -18,6 +23,8 @@ def generate_mock_content(
             "html_description": "",
             "seo_tags": "",
             "status": "no_data",
+            "tokens_used": 0,
+            "estimated_cost_usd": 0,
         }
 
     return {
@@ -26,6 +33,8 @@ def generate_mock_content(
         "html_description": build_html_description(name, description, sku),
         "seo_tags": f"{name}, {sku}, купити, Prom.ua",
         "status": "mock_processed",
+        "tokens_used": 0,
+        "estimated_cost_usd": 0,
     }
 
 
@@ -104,6 +113,20 @@ SOURCE_FACTS:
             if field not in result:
                 raise ValueError(f"Missing field: {field}")
 
+        usage = response.usage
+
+        prompt_tokens = usage.prompt_tokens if usage else 0
+        completion_tokens = usage.completion_tokens if usage else 0
+        total_tokens = usage.total_tokens if usage else 0
+
+        estimated_cost = (
+                (prompt_tokens / 1_000_000) * OPENAI_INPUT_PRICE_PER_1M
+                + (completion_tokens / 1_000_000) * OPENAI_OUTPUT_PRICE_PER_1M
+        )
+
+        result["tokens_used"] = total_tokens
+        result["estimated_cost_usd"] = round(estimated_cost, 6)
+
         return result
 
     except Exception as e:
@@ -114,4 +137,6 @@ SOURCE_FACTS:
             "seo_tags": "",
             "status": "error",
             "error_message": f"Invalid JSON response: {str(e)}",
+            "tokens_used": 0,
+            "estimated_cost_usd": 0,
         }

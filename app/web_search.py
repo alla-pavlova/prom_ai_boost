@@ -1,21 +1,12 @@
-"""
-Mock web search module.
-
-Later this file can be connected to Google Search API,
-Serper API, Tavily API or real web scraping.
-"""
+import json
 
 
 def find_product_facts(name: str, sku: str = "", description: str = "") -> str:
-    facts = []
+    facts = {
+        "name": name,
+        "sku": sku,
+        "description": description,
+        "source": "input_excel",
+    }
 
-    if name:
-        facts.append(f"Product name: {name}")
-
-    if sku:
-        facts.append(f"SKU: {sku}")
-
-    if description:
-        facts.append(f"Original description: {description}")
-
-    return " | ".join(facts)
+    return json.dumps(facts, ensure_ascii=False)
