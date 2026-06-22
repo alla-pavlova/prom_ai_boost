@@ -3,14 +3,17 @@ Prom AI Boost — CLI entry point.
 
 This file:
 - reads products from Excel
+- searches or loads product facts
 - generates product content
 - checks duplicate SKU
 - writes processing status
 - saves versioned output file
 - prints processing statistics
 - writes logs to logs/app.log
+- exports problematic rows to a separate Excel file
 """
 
+import json
 import logging
 from datetime import datetime
 
@@ -49,6 +52,8 @@ def main():
     estimated_cost_list = []
 
     processed_skus = set()
+    cache_hits = 0
+    new_searches = 0
 
     for index, row in df.iterrows():
         name = str(row.get("name", "")).strip()
@@ -69,7 +74,6 @@ def main():
             source_facts_list.append("")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
-
             continue
 
         if is_duplicate_sku(sku, processed_skus):
@@ -86,7 +90,6 @@ def main():
             source_facts_list.append("")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
-
             continue
 
         if sku:
@@ -100,6 +103,14 @@ def main():
                 sku=sku,
                 description=description,
             )
+
+            facts_data = json.loads(source_facts)
+
+            if facts_data.get("from_cache"):
+                cache_hits += 1
+            else:
+                new_searches += 1
+
             result = generate_product_content(
                 name=name,
                 sku=sku,
@@ -112,11 +123,12 @@ def main():
             html_description.append(result.get("html_description", ""))
             seo_tags.append(result.get("seo_tags", ""))
             statuses.append(result.get("status", "processed"))
-            error_messages.append("")
+            error_messages.append(result.get("error_message", ""))
             processed_at.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             source_facts_list.append(source_facts)
             tokens_used_list.append(result.get("tokens_used", 0))
             estimated_cost_list.append(result.get("estimated_cost_usd", 0))
+
             logging.info(f"Processed product: {name}, SKU: {sku}")
 
         except Exception as e:
@@ -164,6 +176,8 @@ def main():
     print(f"Ошибок: {error_count}")
     print(f"Пропущено: {skipped_count}")
     print(f"Без данных: {no_data_count}")
+    print(f"Из кэша: {cache_hits}")
+    print(f"Новые поиски: {new_searches}")
     print("================================\n")
 
     logging.info(
@@ -172,7 +186,11 @@ def main():
         f"duplicates={duplicate_count}, "
         f"errors={error_count}, "
         f"skipped={skipped_count}, "
-        f"no_data={no_data_count}"
+        f"no_data={no_data_count}, "
+        f"cache_hits={cache_hits}, "
+        f"new_searches={new_searches}, "
+        f"tokens={total_tokens}, "
+        f"cost={total_cost:.6f}"
     )
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
