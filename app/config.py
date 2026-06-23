@@ -20,6 +20,10 @@ OPENAI_OUTPUT_PRICE_PER_1M = float(
 USE_WEB_SEARCH = os.getenv("USE_WEB_SEARCH", "false").lower() == "true"
 SEARCH_PROVIDER = os.getenv("SEARCH_PROVIDER", "mock")
 SERPER_API_KEY = os.getenv("SERPER_API_KEY", "")
+
+# SEARCH_PROVIDER = os.getenv("SEARCH_PROVIDER", "mock")
+
+
 CACHE_DIR = os.getenv("CACHE_DIR", "cache")
 
 print(f"INPUT_FILE = {INPUT_FILE}")
