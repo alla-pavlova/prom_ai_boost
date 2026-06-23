@@ -1,5 +1,4 @@
-data/output*.xlsx
-data/errors*.xlsx
+
 logs/
 
 .venv/
@@ -9,6 +8,11 @@ logs/
 __pycache__/
 *.pyc
 cache/
+
+~$*.xlsx
+
+data/output_*.xlsx
+data/errors_*.xlsx
 
 
 
