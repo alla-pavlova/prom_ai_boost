@@ -48,6 +48,10 @@ def main():
     error_messages = []
     processed_at = []
     source_facts_list = []
+    brand_list = []
+    model_list = []
+    category_list = []
+    characteristics_json_list = []
     tokens_used_list = []
     estimated_cost_list = []
 
@@ -72,6 +76,10 @@ def main():
             error_messages.append("No product name")
             processed_at.append("")
             source_facts_list.append("")
+            brand_list.append("")
+            model_list.append("")
+            category_list.append("")
+            characteristics_json_list.append("{}")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
             continue
@@ -88,6 +96,10 @@ def main():
             error_messages.append(f"Duplicate SKU: {sku}")
             processed_at.append("")
             source_facts_list.append("")
+            brand_list.append("")
+            model_list.append("")
+            category_list.append("")
+            characteristics_json_list.append("{}")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
             continue
@@ -105,6 +117,15 @@ def main():
             )
 
             facts_data = json.loads(source_facts)
+            brand_list.append(facts_data.get("brand", ""))
+            model_list.append(facts_data.get("model", ""))
+            category_list.append(facts_data.get("category", ""))
+            characteristics_json_list.append(
+                json.dumps(
+                    facts_data.get("characteristics", {}),
+                    ensure_ascii=False
+                )
+            )
 
             if facts_data.get("from_cache"):
                 cache_hits += 1
@@ -144,6 +165,10 @@ def main():
             error_messages.append(error_text)
             processed_at.append("")
             source_facts_list.append("")
+            brand_list.append("")
+            model_list.append("")
+            category_list.append("")
+            characteristics_json_list.append("{}")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
 
@@ -155,6 +180,10 @@ def main():
     df["error_message"] = error_messages
     df["processed_at"] = processed_at
     df["source_facts"] = source_facts_list
+    df["brand"] = brand_list
+    df["model"] = model_list
+    df["category"] = category_list
+    df["characteristics_json"] = characteristics_json_list
     df["tokens_used"] = tokens_used_list
     df["estimated_cost_usd"] = estimated_cost_list
 
