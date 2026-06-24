@@ -17,8 +17,11 @@ def build_compact_facts(source_facts: str) -> tuple[str, list[str]]:
     except json.JSONDecodeError:
         return source_facts, []
 
+    model = facts_data.get("model", "")
+
     validated_facts = validate_facts(
-        facts_data.get("extracted_facts", [])
+        facts_data.get("extracted_facts", []),
+        model=model,
     )
 
     compact_data = {
