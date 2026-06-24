@@ -2,8 +2,7 @@
 Facts validator.
 
 Filters unsafe, too generic or conflicting facts before they are sent to OpenAI.
-This helps reduce hallucinations and prevents mixing characteristics
-from different product modifications.
+Supports source_score from trusted source ranking.
 """
 
 BAD_FACT_PATTERNS = [
@@ -23,52 +22,29 @@ GENERIC_SERIES_PATTERNS = [
     "серія",
     "линейка",
     "лінійка",
-    "доступный в",
-    "доступний у",
+    "каталоге серии",
+    "каталозі серії",
+    "несколько вариантов",
+    "декілька варіантів",
     "широкого спектра",
-    "разных задач",
-    "різних завдань",
-    "различных задач",
-    "різних задач",
-    "різних завдань",
-    "автоматическое увеличение",
-    "автоматичне збільшення",
-    "тактовой частоты",
-    "тактової частоти",
-    "потоков данных",
-    "потоків даних",
-    ]
+]
 
-CONFLICT_PATTERNS = [
-    " или ",
-    " або ",
-    " / ",
+CPU_PATTERNS = [
     "core i3",
     "core i5",
     "core i7",
     "ryzen 3",
     "ryzen 5",
     "ryzen 7",
+    "ghz",
+    "ггц",
+    "частота",
+    "frequency",
+    "поток",
+    "thread",
+    "ядр",
 ]
-def contains_cpu_details(text: str) -> bool:
-    cpu_patterns = [
-        "core i3",
-        "core i5",
-        "core i7",
-        "ryzen 3",
-        "ryzen 5",
-        "ryzen 7",
-        "ghz",
-        "ггц",
-        "частота",
-        "frequency",
-        "поток",
-        "thread",
-        "ядр",
-        "core",
-    ]
 
-    return any(pattern in text for pattern in cpu_patterns)
 
 def contains_any(text: str, patterns: list[str]) -> bool:
     return any(pattern in text for pattern in patterns)
@@ -91,8 +67,10 @@ def has_conflicting_cpu_variants(text: str) -> bool:
 
     return len(found) > 1
 
-def is_valid_fact(fact: str) -> bool:
-    text = fact.lower().strip()
+
+def is_valid_fact_item(fact_item: dict) -> bool:
+    text = fact_item.get("text", "").lower().strip()
+    source_score = fact_item.get("source_score", 1)
 
     if not text:
         return False
@@ -109,15 +87,26 @@ def is_valid_fact(fact: str) -> bool:
     if has_conflicting_cpu_variants(text):
         return False
 
-    # Блокируем CPU-детали из поисковой выдачи,
-    # если они относятся к серии, а не к конкретной модели
-    if contains_cpu_details(text):
+    # CPU details are allowed only from highly trusted sources.
+    if contains_any(text, CPU_PATTERNS) and source_score < 5:
         return False
 
     return True
 
-def validate_facts(facts: list[str]) -> list[str]:
-    return [
-        fact for fact in facts
-        if is_valid_fact(fact)
-    ]
+
+def validate_facts(facts: list) -> list[str]:
+    validated = []
+
+    for fact in facts:
+        if isinstance(fact, str):
+            fact_item = {
+                "text": fact,
+                "source_score": 1,
+            }
+        else:
+            fact_item = fact
+
+        if is_valid_fact_item(fact_item):
+            validated.append(fact_item.get("text", ""))
+
+    return validated

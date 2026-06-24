@@ -16,6 +16,7 @@ from app.search_cache import load_from_cache, save_to_cache
 from app.serper_client import search_google
 from app.facts_extractor import extract_facts_from_search_results
 from app.facts_filter import filter_search_results
+from app.source_ranker import rank_search_results
 
 def clean_model(raw_model: str, brand: str) -> str:
     model = raw_model.strip()
@@ -114,7 +115,7 @@ def search_with_serper(name: str, sku: str = "", description: str = "") -> dict:
     results = search_google(query=query, num_results=5)
 
     results = filter_search_results(results)
-
+    results = rank_search_results(results)
     extracted_facts = extract_facts_from_search_results(results)
 
     source_url = results[0]["url"] if results else ""

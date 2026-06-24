@@ -7,7 +7,7 @@ from app.config import (
     MODEL,
     USE_OPENAI,
     OPENAI_INPUT_PRICE_PER_1M,
-    OPENAI_OUTPUT_PRICE_PER_1M,
+    OPENAI_OUTPUT_PRICE_PER_1M, USE_WEB_SEARCH,
 )
 from app.prompt_builder import build_compact_facts
 
@@ -52,6 +52,18 @@ def generate_product_content(
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     compact_facts, validated_facts = build_compact_facts(source_facts)
+    if USE_WEB_SEARCH and not validated_facts:
+        return {
+            "description_ua": "",
+            "description_ru": "",
+            "html_description": "",
+            "seo_tags": "",
+            "status": "no_data",
+            "error_message": "No validated facts found",
+            "tokens_used": 0,
+            "estimated_cost_usd": 0,
+            "validated_facts": [],
+        }
     prompt = f"""
     
 Ты создаешь контент для карточки товара Prom.ua.
