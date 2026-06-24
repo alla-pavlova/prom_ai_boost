@@ -26,6 +26,7 @@ def generate_mock_content(
             "status": "no_data",
             "tokens_used": 0,
             "estimated_cost_usd": 0,
+            "validated_facts": [],
         }
 
     return {
@@ -50,8 +51,9 @@ def generate_product_content(
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    compact_facts = build_compact_facts(source_facts)
+    compact_facts, validated_facts = build_compact_facts(source_facts)
     prompt = f"""
+    
 Ты создаешь контент для карточки товара Prom.ua.
 
 ВАЖНО:
@@ -131,6 +133,7 @@ SOURCE_FACTS:
 
         result["tokens_used"] = total_tokens
         result["estimated_cost_usd"] = round(estimated_cost, 6)
+        result["validated_facts"] = validated_facts
 
         return result
 
@@ -144,4 +147,5 @@ SOURCE_FACTS:
             "error_message": f"Invalid JSON response: {str(e)}",
             "tokens_used": 0,
             "estimated_cost_usd": 0,
+            "validated_facts": [],
         }

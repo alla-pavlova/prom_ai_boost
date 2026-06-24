@@ -52,6 +52,7 @@ def main():
     model_list = []
     category_list = []
     characteristics_json_list = []
+    validated_facts_list = []
     tokens_used_list = []
     estimated_cost_list = []
 
@@ -80,6 +81,7 @@ def main():
             model_list.append("")
             category_list.append("")
             characteristics_json_list.append("{}")
+            validated_facts_list.append("[]")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
             continue
@@ -100,6 +102,7 @@ def main():
             model_list.append("")
             category_list.append("")
             characteristics_json_list.append("{}")
+            validated_facts_list.append("[]")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
             continue
@@ -127,6 +130,7 @@ def main():
                 )
             )
 
+
             if facts_data.get("from_cache"):
                 cache_hits += 1
             else:
@@ -147,6 +151,13 @@ def main():
             error_messages.append(result.get("error_message", ""))
             processed_at.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             source_facts_list.append(source_facts)
+
+            validated_facts_list.append(
+                json.dumps(
+                    result.get("validated_facts", []),
+                    ensure_ascii=False
+                )
+            )
             tokens_used_list.append(result.get("tokens_used", 0))
             estimated_cost_list.append(result.get("estimated_cost_usd", 0))
 
@@ -169,6 +180,7 @@ def main():
             model_list.append("")
             category_list.append("")
             characteristics_json_list.append("{}")
+            validated_facts_list.append("[]")
             tokens_used_list.append(0)
             estimated_cost_list.append(0)
 
@@ -184,6 +196,7 @@ def main():
     df["model"] = model_list
     df["category"] = category_list
     df["characteristics_json"] = characteristics_json_list
+    df["validated_facts"] = validated_facts_list
     df["tokens_used"] = tokens_used_list
     df["estimated_cost_usd"] = estimated_cost_list
 
