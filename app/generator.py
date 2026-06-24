@@ -9,6 +9,7 @@ from app.config import (
     OPENAI_INPUT_PRICE_PER_1M,
     OPENAI_OUTPUT_PRICE_PER_1M,
 )
+from app.prompt_builder import build_compact_facts
 
 def generate_mock_content(
     name: str,
@@ -49,6 +50,7 @@ def generate_product_content(
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
+    compact_facts = build_compact_facts(source_facts)
     prompt = f"""
 Ты создаешь контент для карточки товара Prom.ua.
 
@@ -64,7 +66,7 @@ def generate_product_content(
 - Не добавляй текст после JSON.
 
 SOURCE_FACTS:
-{source_facts}
+{compact_facts}
 
 Товар:
 Название: {name}
